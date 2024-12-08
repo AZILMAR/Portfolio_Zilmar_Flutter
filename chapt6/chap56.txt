@@ -1,0 +1,4 @@
+ floatingActionButton: FloatingActionButton(
+        onPressed: _showAddNoteDialog,
+        tooltip: 'Add Note',
+        child: const Icon(Icons.add),

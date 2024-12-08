@@ -1,0 +1,212 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Note Taking App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0; // Track the selected tab index
+
+  // List to hold notes and other data
+  final List<String> _notes = [];
+  final List<DateTime> _noteDates = [];
+  final TextEditingController _controller = TextEditingController();
+
+  // Function to add a note
+  void _addNote() {
+    if (_controller.text.isNotEmpty) {
+      setState(() {
+        _notes.add(_controller.text);
+        _noteDates.add(DateTime.now()); // Add the current time as note date
+        _controller.clear();
+      });
+    }
+  }
+
+  // Function to delete a note
+  void _deleteNote(int index) {
+    setState(() {
+      _notes.removeAt(index);
+      _noteDates.removeAt(index);
+    });
+  }
+
+  // Dialog to add a new note
+  void _showAddNoteDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add Note'),
+          content: TextField(
+            controller: _controller,
+            decoration: const InputDecoration(hintText: 'Enter note'),
+            maxLines: 5, // Allow multi-line notes
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _addNote();
+              },
+              child: const Text('Add'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Pages for different sections
+  Widget _buildHomePage() {
+    return ListView.builder(
+      itemCount: _notes.length,
+      itemBuilder: (context, index) {
+        return Dismissible(
+          key: Key(_notes[index]),
+          onDismissed: (direction) {
+            // Delete the note on swipe
+            _deleteNote(index);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Note deleted')),
+            );
+          },
+          background: Container(color: Colors.red),
+          child: ListTile(
+            title: Text(_notes[index]),
+            subtitle: Text('Added on: ${_noteDates[index]}'),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () {
+                _deleteNote(index);
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildListsPage() {
+    return Center(
+      child: Text(
+        'Lists Page - Manage your categorized notes here.',
+        style: TextStyle(fontSize: 18),
+      ),
+    );
+  }
+
+  Widget _buildDatesPage() {
+    return ListView.builder(
+      itemCount: _notes.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(_notes[index]),
+          subtitle: Text('Added on: ${_noteDates[index]}'),
+        );
+      },
+    );
+  }
+
+  Widget _buildRecordsPage() {
+    return Center(
+      child: Text(
+        'Records Page - View historical records of your notes.',
+        style: TextStyle(fontSize: 18),
+      ),
+    );
+  }
+
+  // Pages list
+  List<Widget> _pages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      _buildHomePage(),
+      _buildListsPage(),
+      _buildDatesPage(),
+      _buildRecordsPage(),
+    ];
+  }
+
+  // Top Navigation Bar Item Selection
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Note Taking App'),
+        centerTitle: true,
+        backgroundColor: Colors.green, // Green background for the app bar
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(50.0),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildNavBarItem('Home', 0),
+                _buildNavBarItem('Lists', 1),
+                _buildNavBarItem('Dates', 2),
+                _buildNavBarItem('Records', 3),
+              ],
+            ),
+          ),
+        ),
+      ),
+      body: _pages[_selectedIndex], // Display the content based on selected tab
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddNoteDialog,
+        tooltip: 'Add Note',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  // Build navbar items for top app bar
+  Widget _buildNavBarItem(String title, int index) {
+    return GestureDetector(
+      onTap: () => _onItemTapped(index),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: _selectedIndex == index ? Colors.white : Colors.black,
+          fontWeight: _selectedIndex == index ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+    );
+  }
+}
