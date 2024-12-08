@@ -1,0 +1,8 @@
+REFLECTION:
+Setting up Flutter with VS Code is easy with the help of Flutter Doctor. It checks everything you need and shows how to fix problems. This setup gives you a great start for building apps.
+
+
+
+
+
+
